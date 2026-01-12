@@ -113,7 +113,7 @@ export default function DatePicker({
                 </div>
 
                 {isOpen && (
-                    <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1">
+                    <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-1">
                         <ReactDatePicker
                             selected={selected}
                             onChange={handleDateChange}
