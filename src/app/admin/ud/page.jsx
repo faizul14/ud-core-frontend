@@ -247,49 +247,61 @@ export default function UDManagementPage() {
                     <>
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead className="bg-gray-50">
+                                <thead className="bg-gray-50 border-b border-gray-200">
                                     <tr>
-                                        <th className="text-left">Kode UD</th>
-                                        <th className="text-left">Nama UD</th>
-                                        <th className="text-left hidden md:table-cell">Pemilik</th>
-                                        <th className="text-left hidden lg:table-cell">Bank</th>
-                                        <th className="text-center">Status</th>
-                                        <th className="text-center">Aksi</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                            Kode UD
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                            Nama UD
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider hidden md:table-cell">
+                                            Pemilik
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider hidden lg:table-cell">
+                                            Bank
+                                        </th>
+                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                            Aksi
+                                        </th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody className="divide-y divide-gray-200">
                                     {data.map((item) => (
-                                        <tr key={item._id}>
-                                            <td>
-                                                <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                                        <tr key={item._id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="font-mono text-sm bg-gray-100 px-2.5 py-1 rounded font-medium text-gray-900">
                                                     {item.kode_ud}
                                                 </span>
                                             </td>
-                                            <td>
+                                            <td className="px-6 py-4">
                                                 <div>
                                                     <p className="font-medium text-gray-900">{item.nama_ud}</p>
-                                                    <p className="text-sm text-gray-500 truncate max-w-[200px]">
+                                                    <p className="text-sm text-gray-500 truncate max-w-[250px] mt-0.5">
                                                         {item.alamat || '-'}
                                                     </p>
                                                 </div>
                                             </td>
-                                            <td className="hidden md:table-cell">
+                                            <td className="px-6 py-4 text-gray-700 hidden md:table-cell">
                                                 {item.nama_pemilik || '-'}
                                             </td>
-                                            <td className="hidden lg:table-cell">
+                                            <td className="px-6 py-4 hidden lg:table-cell">
                                                 <div className="text-sm">
-                                                    <p>{item.bank || '-'}</p>
-                                                    <p className="text-gray-500">{item.no_rekening || '-'}</p>
+                                                    <p className="text-gray-900 font-medium">{item.bank || '-'}</p>
+                                                    <p className="text-gray-500 mt-0.5">{item.no_rekening || '-'}</p>
                                                 </div>
                                             </td>
-                                            <td className="text-center">
-                                                <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full
+                                            <td className="px-6 py-4 text-center whitespace-nowrap">
+                                                <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full
                           ${item.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
                         `}>
                                                     {item.isActive ? 'Aktif' : 'Nonaktif'}
                                                 </span>
                                             </td>
-                                            <td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center justify-center gap-2">
                                                     <button
                                                         onClick={() => openEditModal(item)}
