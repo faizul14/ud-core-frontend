@@ -42,6 +42,18 @@ const PrintStyles = () => (
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.08;
+            width: 80%;
+            z-index: -1;
+            pointer-events: none;
         }
         .nota-table {
             width: 100%;
@@ -154,6 +166,9 @@ const TemplateESC = ({ data, udData }) => (
 // Template 2: UD PILAR PANGAN MANDIRI
 const TemplatePilarPangan = ({ data, udData }) => (
     <div className="nota-container page-break font-times text-black">
+        {/* Watermark Logo */}
+        <img src="/logo pilar pangan.jpg" alt="Watermark" className="watermark" />
+
         <div className="flex justify-between items-start mb-4">
             <div className="w-1/3 pt-4">
                 <div className="text-sm">Mataram, {formatDate(data.tanggal)}</div>
@@ -384,11 +399,11 @@ export default function NotaDapur({ data, itemsByUD }) {
         const name = udName.toUpperCase();
         if (name.includes('SAUDARA') || name.includes('ESC')) {
             return <TemplateESC key={udName} data={data} udData={udData} />;
-        } else if (name.includes('PILAR')) {
+        } else if (name.includes('PILAR') || name.includes('BMJ') || name.includes('MAHABBAH JAYA')) {
             return <TemplatePilarPangan key={udName} data={data} udData={udData} />;
         } else if (name.includes('AMANAH') || name.includes('ASM')) {
             return <TemplateASM key={udName} data={data} udData={udData} />;
-        } else if (name.includes('BANYU') || name.includes('MAS')) {
+        } else if (name.includes('BANYU MAS') || name.includes('BANYUMAS')) {
             return <TemplateBanyuMas key={udName} data={data} udData={udData} />;
         }
         // Default to TemplateESC if no match
