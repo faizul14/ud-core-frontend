@@ -293,48 +293,62 @@ export default function BarangManagementPage() {
                     <>
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead className="bg-gray-50">
+                                <thead className="bg-gray-50 border-b border-gray-200">
                                     <tr>
-                                        <th className="text-left">Nama Barang</th>
-                                        <th className="text-center">Satuan</th>
-                                        <th className="text-right">Harga Jual</th>
-                                        <th className="text-right hidden md:table-cell">Harga Modal</th>
-                                        <th className="text-left hidden lg:table-cell">UD</th>
-                                        <th className="text-center">Status</th>
-                                        <th className="text-center">Aksi</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Nama Barang
+                                        </th>
+                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Satuan
+                                        </th>
+                                        <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Harga Jual
+                                        </th>
+                                        <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider hidden md:table-cell">
+                                            Harga Modal
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden lg:table-cell">
+                                            UD
+                                        </th>
+                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Aksi
+                                        </th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody className="divide-y divide-gray-200">
                                     {data.map((item) => (
-                                        <tr key={item._id}>
-                                            <td>
+                                        <tr key={item._id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4">
                                                 <p className="font-medium text-gray-900">{item.nama_barang}</p>
                                             </td>
-                                            <td className="text-center">
+                                            <td className="px-6 py-4 text-center">
                                                 <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded">
                                                     {item.satuan}
                                                 </span>
                                             </td>
-                                            <td className="text-right font-medium text-gray-900">
+                                            <td className="px-6 py-4 text-right font-medium text-gray-900">
                                                 {formatCurrency(item.harga_jual)}
                                             </td>
-                                            <td className="text-right hidden md:table-cell text-gray-500">
+                                            <td className="px-6 py-4 text-right text-gray-500 hidden md:table-cell">
                                                 {formatCurrency(item.harga_modal || 0)}
                                             </td>
-                                            <td className="hidden lg:table-cell">
+                                            <td className="px-6 py-4 hidden lg:table-cell">
                                                 <div>
-                                                    <p className="text-sm text-gray-900">{item.ud_id?.nama_ud || '-'}</p>
+                                                    <p className="text-sm font-medium text-gray-900">{item.ud_id?.nama_ud || '-'}</p>
                                                     <p className="text-xs text-gray-500">{item.ud_id?.kode_ud || ''}</p>
                                                 </div>
                                             </td>
-                                            <td className="text-center">
-                                                <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full
+                                            <td className="px-6 py-4 text-center">
+                                                <span className={`inline-block px-2.5 py-1 text-xs font-medium rounded-full
                           ${item.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
                         `}>
                                                     {item.isActive ? 'Aktif' : 'Nonaktif'}
                                                 </span>
                                             </td>
-                                            <td>
+                                            <td className="px-6 py-4">
                                                 <div className="flex items-center justify-center gap-2">
                                                     <button
                                                         onClick={() => openEditModal(item)}
