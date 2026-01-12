@@ -12,6 +12,7 @@ import {
 import { transaksiAPI } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { getErrorMessage, formatCurrency, formatDate, getStatusClass } from '@/lib/utils';
+import NotaDapur from '@/components/print/NotaDapur';
 
 export default function TransaksiDetailPage() {
     const router = useRouter();
@@ -131,11 +132,19 @@ export default function TransaksiDetailPage() {
                     )}
                     <button
                         onClick={() => window.print()}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg
+                     hover:bg-blue-700 transition-colors"
+                    >
+                        <Printer className="w-4 h-4" />
+                        Cetak Nota Dapur
+                    </button>
+                    <button
+                        onClick={() => window.print()}
                         className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg
                      hover:bg-gray-50 transition-colors"
                     >
-                        <Printer className="w-4 h-4" />
-                        Print
+                        <FileText className="w-4 h-4" />
+                        Print Detail
                     </button>
                 </div>
             </div>
@@ -245,6 +254,9 @@ export default function TransaksiDetailPage() {
             <div className="text-center text-sm text-gray-500">
                 Dibuat oleh: {data.created_by?.username || '-'} • {formatDate(data.createdAt)}
             </div>
+
+            {/* Hidden Print Area */}
+            <NotaDapur data={data} itemsByUD={itemsByUD} />
         </div>
     );
 }
