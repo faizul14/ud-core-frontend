@@ -168,11 +168,11 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="grid grid-cols-12 gap-4 md:gap-6 pb-8">
+        <div className="grid grid-cols-12 gap-4 md:gap-6 pb-20 lg:pb-8 px-1">
             {/* Page Header */}
-            <div className="col-span-12">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Analitik</h1>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">
+            <div className="col-span-12 px-2">
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white uppercase tracking-tight">Dashboard Analitik</h1>
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
                     Pantau performa bisnis Anda secara real-time.
                 </p>
             </div>

@@ -1,5 +1,5 @@
 'use client';
-
+import { useState, useEffect } from 'react';
 import {
     PieChart,
     Pie,
@@ -17,8 +17,19 @@ const COLORS = [
 ];
 
 const SalesDistributionChart = ({ data = [] }) => {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
-        <div className="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-200 dark:border-gray-800 p-5 md:p-6 h-full min-h-[400px]">
+        <div className="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-200 dark:border-gray-800 p-4 md:p-6 h-full min-h-[400px] mx-2 md:mx-0">
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
@@ -44,9 +55,9 @@ const SalesDistributionChart = ({ data = [] }) => {
                             <Pie
                                 data={data}
                                 cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={100}
+                                cy={isMobile ? "40%" : "50%"}
+                                innerRadius={isMobile ? 45 : 60}
+                                outerRadius={isMobile ? 80 : 100}
                                 fill="#8884d8"
                                 paddingAngle={5}
                                 dataKey="value"
@@ -66,11 +77,14 @@ const SalesDistributionChart = ({ data = [] }) => {
                                 formatter={(value) => formatCurrency(value)}
                             />
                             <Legend
-                                layout="vertical"
-                                verticalAlign="middle"
-                                align="right"
+                                layout={isMobile ? "horizontal" : "vertical"}
+                                verticalAlign={isMobile ? "bottom" : "middle"}
+                                align={isMobile ? "center" : "right"}
                                 iconType="circle"
-                                wrapperStyle={{ fontSize: '12px' }}
+                                wrapperStyle={{
+                                    fontSize: '11px',
+                                    paddingTop: isMobile ? '20px' : '0'
+                                }}
                             />
                         </PieChart>
                     </ResponsiveContainer>

@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+
 import {
     BarChart,
     Bar,
@@ -20,8 +22,19 @@ const COLORS = [
 ];
 
 const TopItemsChart = ({ data = [] }) => {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
-        <div className="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-200 dark:border-gray-800 p-5 md:p-6 h-full min-h-[400px]">
+        <div className="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-200 dark:border-gray-800 p-4 md:p-6 h-full min-h-[400px] mx-2 md:mx-0">
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
@@ -46,15 +59,15 @@ const TopItemsChart = ({ data = [] }) => {
                         <BarChart
                             data={data}
                             layout="vertical"
-                            margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                            margin={{ top: 5, right: 20, left: isMobile ? -20 : 0, bottom: 5 }}
                         >
                             <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e5e7eb" opacity={0.5} />
                             <XAxis type="number" hide />
                             <YAxis
                                 type="category"
                                 dataKey="name"
-                                width={120}
-                                tick={{ fontSize: 12, fill: '#6b7280' }}
+                                width={isMobile ? 80 : 120}
+                                tick={{ fontSize: isMobile ? 10 : 12, fill: '#6b7280' }}
                                 axisLine={false}
                                 tickLine={false}
                             />

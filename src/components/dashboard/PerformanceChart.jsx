@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+
 import {
     AreaChart,
     Area,
@@ -14,8 +16,19 @@ import { TrendingUp } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
 const PerformanceChart = ({ data = [], viewType = 'daily' }) => {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
-        <div className="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-200 dark:border-gray-800 p-5 md:p-6 h-full min-h-[400px]">
+        <div className="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-200 dark:border-gray-800 p-4 md:p-6 h-full min-h-[400px] mx-2 md:mx-0">
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
@@ -39,7 +52,7 @@ const PerformanceChart = ({ data = [], viewType = 'daily' }) => {
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart
                             data={data}
-                            margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                            margin={{ top: 10, right: 10, left: isMobile ? -30 : 0, bottom: 0 }}
                         >
                             <defs>
                                 <linearGradient id="colorJual" x1="0" y1="0" x2="0" y2="1">
