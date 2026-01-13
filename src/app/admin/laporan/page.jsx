@@ -186,14 +186,26 @@ export default function LaporanPage() {
                 if (!groupedData[dateKey]) groupedData[dateKey] = { tanggal: dateKey, uds: {} };
 
                 trx.items?.forEach(item => {
-                    const udId = item.ud_id?._id || 'unknown';
+                    const bId = item.barang_id?._id || item.barang_id;
+                    const uId = item.ud_id?._id || item.ud_id;
+                    const barang = barangList.find(b => b._id === bId);
+                    const ud = udList.find(u => u._id === uId);
+
+                    const enrichedItem = {
+                        ...item,
+                        nama_barang: item.nama_barang || barang?.nama_barang || item.barang_id?.nama_barang,
+                        satuan: item.satuan || barang?.satuan || item.barang_id?.satuan
+                    };
+
+                    const udId = uId || 'unknown';
+                    const udName = ud?.nama_ud || item.ud_id?.nama_ud || 'Unknown UD';
                     if (!groupedData[dateKey].uds[udId]) {
                         groupedData[dateKey].uds[udId] = {
-                            nama_ud: item.ud_id?.nama_ud || 'Unknown UD',
+                            nama_ud: udName,
                             items: []
                         };
                     }
-                    groupedData[dateKey].uds[udId].items.push(item);
+                    groupedData[dateKey].uds[udId].items.push(enrichedItem);
                 });
             });
 
@@ -405,6 +417,10 @@ export default function LaporanPage() {
                 headStyles: { fillColor: [71, 85, 105] },
             });
 
+            // Create lookup maps for enrichment
+            const barangMap = new Map(barangList.map(b => [b._id, b]));
+            const udLookupMap = new Map(udList.map(u => [u._id, u]));
+
             // Group by date THEN by UD
             const groupedData = {};
             transactions.forEach(trx => {
@@ -412,14 +428,26 @@ export default function LaporanPage() {
                 if (!groupedData[dateKey]) groupedData[dateKey] = { tanggal: dateKey, uds: {} };
 
                 trx.items?.forEach(item => {
-                    const udId = item.ud_id?._id || 'unknown';
+                    const bId = item.barang_id?._id || item.barang_id;
+                    const uId = item.ud_id?._id || item.ud_id;
+                    const barang = barangMap.get(bId);
+                    const ud = udLookupMap.get(uId);
+
+                    const enrichedItem = {
+                        ...item,
+                        nama_barang: item.nama_barang || barang?.nama_barang || item.barang_id?.nama_barang,
+                        satuan: item.satuan || barang?.satuan || item.barang_id?.satuan
+                    };
+
+                    const udId = uId || 'unknown';
+                    const udName = ud?.nama_ud || item.ud_id?.nama_ud || 'Unknown UD';
                     if (!groupedData[dateKey].uds[udId]) {
                         groupedData[dateKey].uds[udId] = {
-                            nama_ud: item.ud_id?.nama_ud || 'Unknown UD',
+                            nama_ud: udName,
                             items: []
                         };
                     }
-                    groupedData[dateKey].uds[udId].items.push(item);
+                    groupedData[dateKey].uds[udId].items.push(enrichedItem);
                 });
             });
 
