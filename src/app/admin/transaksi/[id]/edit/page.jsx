@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import {
     ShoppingCart,
     Search,
@@ -15,10 +15,11 @@ import {
 import { transaksiAPI, periodeAPI, dapurAPI, barangAPI } from '@/lib/api';
 import DatePicker from '@/components/ui/DatePicker';
 import { useToast } from '@/contexts/ToastContext';
-import { getErrorMessage, formatCurrency, toDateInputValue, debounce } from '@/lib/utils';
+import { getErrorMessage, formatCurrency, debounce } from '@/lib/utils';
 
-export default function NewTransaksiPage() {
+export default function EditTransaksiPage() {
     const router = useRouter();
+    const params = useParams();
     const { toast } = useToast();
     const searchInputRef = useRef(null);
 
@@ -27,6 +28,7 @@ export default function NewTransaksiPage() {
     const [dapurId, setDapurId] = useState('');
     const [tanggal, setTanggal] = useState(new Date());
     const [items, setItems] = useState([]);
+    const [kodeTransaksi, setKodeTransaksi] = useState('');
 
     // Options state
     const [periodeList, setPeriodeList] = useState([]);
@@ -41,16 +43,19 @@ export default function NewTransaksiPage() {
     // Loading state
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [fetchingData, setFetchingData] = useState(true);
 
     useEffect(() => {
         fetchOptions();
-    }, []);
+        if (params.id) {
+            fetchTransaksiDetail();
+        }
+    }, [params.id]);
 
     const fetchOptions = async () => {
         try {
-            setLoading(true);
             const [periodeRes, dapurRes] = await Promise.all([
-                periodeAPI.getAll({ limit: 50, isClosed: false }),
+                periodeAPI.getAll({ limit: 50 }), // List all including closed if needed for old trx
                 dapurAPI.getAll({ limit: 100, isActive: true }),
             ]);
 
@@ -61,8 +66,48 @@ export default function NewTransaksiPage() {
                 setDapurList(dapurRes.data.data);
             }
         } catch (error) {
+            console.error('Failed to fetch options:', error);
+        }
+    };
+
+    const fetchTransaksiDetail = async () => {
+        try {
+            setFetchingData(true);
+            const response = await transaksiAPI.getById(params.id);
+            if (response.data.success) {
+                const trx = response.data.data;
+
+                // Only draft transactions can be edited per API docs
+                if (trx.status !== 'draft') {
+                    toast.error('Hanya transaksi draft yang dapat diedit');
+                    router.push(`/admin/transaksi/${params.id}`);
+                    return;
+                }
+
+                setKodeTransaksi(trx.kode_transaksi);
+                setPeriodeId(trx.periode_id?._id || '');
+                setDapurId(trx.dapur_id?._id || '');
+                setTanggal(new Date(trx.tanggal));
+
+                // Format items for the UI
+                const formattedItems = trx.items.map(item => ({
+                    barang_id: item.barang_id?._id,
+                    nama_barang: item.barang_id?.nama_barang,
+                    satuan: item.barang_id?.satuan,
+                    harga_jual: item.harga_jual,
+                    harga_modal: item.harga_modal,
+                    ud_id: item.ud_id?._id,
+                    ud_nama: item.ud_id?.nama_ud,
+                    ud_kode: item.ud_id?.kode_ud,
+                    qty: item.qty,
+                }));
+                setItems(formattedItems);
+            }
+        } catch (error) {
             toast.error(getErrorMessage(error));
+            router.push('/admin/transaksi');
         } finally {
+            setFetchingData(false);
             setLoading(false);
         }
     };
@@ -99,13 +144,11 @@ export default function NewTransaksiPage() {
     };
 
     const handleSelectBarang = (barang) => {
-        // Check if already added
         if (items.some((item) => item.barang_id === barang._id)) {
             toast.warning('Barang sudah ada dalam daftar');
             return;
         }
 
-        // Add to items
         setItems((prev) => [
             ...prev,
             {
@@ -121,7 +164,6 @@ export default function NewTransaksiPage() {
             },
         ]);
 
-        // Clear search
         setSearchQuery('');
         setSearchResults([]);
         setShowDropdown(false);
@@ -148,7 +190,6 @@ export default function NewTransaksiPage() {
     };
 
     const handleSubmit = async (complete = false) => {
-        // Validation
         if (!periodeId) {
             toast.warning('Pilih periode terlebih dahulu');
             return;
@@ -165,7 +206,6 @@ export default function NewTransaksiPage() {
         try {
             setSubmitting(true);
 
-            // Create transaksi
             const payload = {
                 periode_id: periodeId,
                 dapur_id: dapurId,
@@ -176,20 +216,19 @@ export default function NewTransaksiPage() {
                 })),
             };
 
-            const createRes = await transaksiAPI.create(payload);
+            const updateRes = await transaksiAPI.update(params.id, payload);
 
-            if (!createRes.data.success) {
-                throw new Error(createRes.data.message);
+            if (!updateRes.data.success) {
+                throw new Error(updateRes.data.message);
             }
 
-            // Complete if requested
             if (complete) {
-                const completeRes = await transaksiAPI.complete(createRes.data.data._id);
+                const completeRes = await transaksiAPI.complete(params.id);
                 if (completeRes.data.success) {
-                    toast.success('Transaksi berhasil disimpan dan selesai');
+                    toast.success('Transaksi berhasil diupdate dan selesai');
                 }
             } else {
-                toast.success('Transaksi berhasil disimpan sebagai draft');
+                toast.success('Transaksi berhasil diupdate sebagai draft');
             }
 
             router.push('/admin/transaksi');
@@ -200,12 +239,12 @@ export default function NewTransaksiPage() {
         }
     };
 
-    if (loading) {
+    if (loading || fetchingData) {
         return (
             <div className="flex items-center justify-center h-[50vh]">
                 <div className="text-center">
                     <Loader2 className="w-10 h-10 text-blue-500 animate-spin mx-auto mb-3" />
-                    <p className="text-gray-500">Memuat data...</p>
+                    <p className="text-gray-500">Memuat data transaksi...</p>
                 </div>
             </div>
         );
@@ -222,8 +261,8 @@ export default function NewTransaksiPage() {
                     <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Input Transaksi Baru</h1>
-                    <p className="text-gray-500 mt-1">Masukkan data barang untuk transaksi</p>
+                    <h1 className="text-2xl font-bold text-gray-900">Edit Transaksi</h1>
+                    <p className="text-gray-500 mt-1 font-mono">{kodeTransaksi}</p>
                 </div>
             </div>
 
@@ -439,7 +478,7 @@ export default function NewTransaksiPage() {
                      hover:bg-gray-700 transition-colors disabled:opacity-50"
                     >
                         <Save className="w-5 h-5" />
-                        Simpan Draft
+                        Update Draft
                     </button>
                     <button
                         onClick={() => handleSubmit(true)}
@@ -452,7 +491,7 @@ export default function NewTransaksiPage() {
                         ) : (
                             <CheckCircle className="w-5 h-5" />
                         )}
-                        Simpan & Selesai
+                        Update & Selesai
                     </button>
                 </div>
             </div>

@@ -7,7 +7,7 @@ import {
     Search,
     Eye,
     Edit,
-    XCircle,
+    Trash2,
     ClipboardList,
     Loader2,
     Filter,
@@ -42,10 +42,10 @@ export default function TransaksiListPage() {
     const [periodeList, setPeriodeList] = useState([]);
     const [dapurList, setDapurList] = useState([]);
 
-    // Cancel state
-    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-    const [cancellingItem, setCancellingItem] = useState(null);
-    const [cancelLoading, setCancelLoading] = useState(false);
+    // Delete state
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deletingItem, setDeletingItem] = useState(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     useEffect(() => {
         fetchOptions();
@@ -98,20 +98,20 @@ export default function TransaksiListPage() {
         }
     };
 
-    const handleCancelTransaksi = async () => {
-        if (!cancellingItem) return;
+    const handleDeleteTransaksi = async () => {
+        if (!deletingItem) return;
 
         try {
-            setCancelLoading(true);
-            await transaksiAPI.cancel(cancellingItem._id);
-            toast.success('Transaksi berhasil dibatalkan');
-            setCancelDialogOpen(false);
-            setCancellingItem(null);
+            setDeleteLoading(true);
+            await transaksiAPI.cancel(deletingItem._id);
+            toast.success('Transaksi berhasil dihapus');
+            setDeleteDialogOpen(false);
+            setDeletingItem(null);
             fetchData();
         } catch (error) {
             toast.error(getErrorMessage(error));
         } finally {
-            setCancelLoading(false);
+            setDeleteLoading(false);
         }
     };
 
@@ -321,19 +321,19 @@ export default function TransaksiListPage() {
                                                             <Link
                                                                 href={`/admin/transaksi/${item._id}/edit`}
                                                                 className="p-2 hover:bg-yellow-50 rounded-lg text-yellow-600 transition-colors"
-                                                                title="Edit"
+                                                                title="Edit Transaksi"
                                                             >
                                                                 <Edit className="w-4 h-4" />
                                                             </Link>
                                                             <button
                                                                 onClick={() => {
-                                                                    setCancellingItem(item);
-                                                                    setCancelDialogOpen(true);
+                                                                    setDeletingItem(item);
+                                                                    setDeleteDialogOpen(true);
                                                                 }}
                                                                 className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
-                                                                title="Batalkan"
+                                                                title="Hapus Transaksi"
                                                             >
-                                                                <XCircle className="w-4 h-4" />
+                                                                <Trash2 className="w-4 h-4" />
                                                             </button>
                                                         </>
                                                     )}
@@ -362,18 +362,18 @@ export default function TransaksiListPage() {
                 )}
             </div>
 
-            {/* Cancel Confirm Dialog */}
+            {/* Delete Confirm Dialog */}
             <ConfirmDialog
-                isOpen={cancelDialogOpen}
+                isOpen={deleteDialogOpen}
                 onClose={() => {
-                    setCancelDialogOpen(false);
-                    setCancellingItem(null);
+                    setDeleteDialogOpen(false);
+                    setDeletingItem(null);
                 }}
-                onConfirm={handleCancelTransaksi}
-                title="Batalkan Transaksi"
-                message={`Apakah Anda yakin ingin membatalkan transaksi "${cancellingItem?.kode_transaksi}"?`}
-                confirmText="Ya, Batalkan"
-                loading={cancelLoading}
+                onConfirm={handleDeleteTransaksi}
+                title="Hapus Transaksi"
+                message={`Apakah Anda yakin ingin menghapus transaksi "${deletingItem?.kode_transaksi}"? Data ini akan dibatalkan dan tidak dapat dikembalikan.`}
+                confirmText="Ya, Hapus"
+                loading={deleteLoading}
             />
         </div>
     );
