@@ -14,6 +14,8 @@ import { useToast } from '@/contexts/ToastContext';
 import { getErrorMessage, formatCurrency, formatDate, getStatusClass } from '@/lib/utils';
 import NotaDapur from '@/components/print/NotaDapur';
 
+import { downloadPDF } from '@/lib/pdfGenerator';
+
 export default function TransaksiDetailPage() {
     const router = useRouter();
     const params = useParams();
@@ -22,6 +24,8 @@ export default function TransaksiDetailPage() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [completing, setCompleting] = useState(false);
+    const [selectedUDForPrint, setSelectedUDForPrint] = useState(null);
+    const [downloading, setDownloading] = useState(null);
 
     useEffect(() => {
         if (params.id) {
@@ -65,6 +69,7 @@ export default function TransaksiDetailPage() {
             const udName = item.ud_id?.nama_ud || 'Unknown UD';
             if (!acc[udId]) {
                 acc[udId] = {
+                    id: udId,
                     nama_ud: udName,
                     kode_ud: item.ud_id?.kode_ud || '',
                     items: [],
@@ -75,6 +80,36 @@ export default function TransaksiDetailPage() {
             acc[udId].total += item.subtotal_jual;
             return acc;
         }, {});
+    };
+
+    const handlePrintAll = () => {
+        setSelectedUDForPrint(null);
+        setTimeout(() => {
+            window.print();
+        }, 100);
+    };
+
+    const handlePrintIndividual = (udId) => {
+        setSelectedUDForPrint(udId);
+        setTimeout(() => {
+            window.print();
+            // Reset after print dialog closes
+            setTimeout(() => setSelectedUDForPrint(null), 1000);
+        }, 100);
+    };
+
+    const handleDownloadIndividual = async (udId, udName) => {
+        try {
+            setDownloading(udId);
+            const dateStr = data.tanggal ? new Date(data.tanggal).toISOString().split('T')[0] : 'date';
+            const fileName = `Nota_${udName.replace(/\s+/g, '_')}_${dateStr}.pdf`;
+            await downloadPDF(`nota-${udId}`, fileName);
+            toast.success('PDF berhasil diunduh');
+        } catch (error) {
+            toast.error('Gagal mengunduh PDF');
+        } finally {
+            setDownloading(null);
+        }
     };
 
     if (loading) {
@@ -131,12 +166,12 @@ export default function TransaksiDetailPage() {
                         </button>
                     )}
                     <button
-                        onClick={() => window.print()}
+                        onClick={handlePrintAll}
                         className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg
                      hover:bg-blue-700 transition-colors"
                     >
                         <Printer className="w-4 h-4" />
-                        Cetak Nota Dapur
+                        Cetak Semua Nota
                     </button>
                     <button
                         onClick={() => window.print()}
@@ -195,7 +230,7 @@ export default function TransaksiDetailPage() {
                 <div key={udId} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                     {/* UD Header */}
                     <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
                                 <FileText className="w-5 h-5 text-gray-500" />
                                 <div>
@@ -203,9 +238,35 @@ export default function TransaksiDetailPage() {
                                     <p className="text-sm text-gray-500">{udData.kode_ud}</p>
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <p className="text-sm text-gray-500">Subtotal UD</p>
-                                <p className="font-semibold text-gray-900">{formatCurrency(udData.total)}</p>
+
+                            <div className="flex items-center gap-4">
+                                <div className="text-right hidden sm:block">
+                                    <p className="text-sm text-gray-500">Subtotal UD</p>
+                                    <p className="font-semibold text-gray-900">{formatCurrency(udData.total)}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => handlePrintIndividual(udId)}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg
+                                                 hover:bg-gray-50 transition-colors text-sm font-medium"
+                                    >
+                                        <Printer className="w-4 h-4" />
+                                        Cetak
+                                    </button>
+                                    <button
+                                        onClick={() => handleDownloadIndividual(udId, udData.nama_ud)}
+                                        disabled={downloading === udId}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg
+                                                 hover:bg-blue-100 transition-colors text-sm font-medium disabled:opacity-50"
+                                    >
+                                        {downloading === udId ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <FileText className="w-4 h-4" />
+                                        )}
+                                        PDF
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -256,7 +317,11 @@ export default function TransaksiDetailPage() {
             </div>
 
             {/* Hidden Print Area */}
-            <NotaDapur data={data} itemsByUD={itemsByUD} />
+            <NotaDapur
+                data={data}
+                itemsByUD={itemsByUD}
+                udIdFilter={selectedUDForPrint}
+            />
         </div>
     );
 }

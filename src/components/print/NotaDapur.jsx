@@ -87,8 +87,8 @@ const PrintStyles = () => (
 );
 
 // Template 1: UD. EMPAT SAUDARA CEMERLANG (ESC)
-const TemplateESC = ({ data, udData }) => (
-    <div className="nota-container page-break font-calibri text-black">
+const TemplateESC = ({ data, udData, udId }) => (
+    <div id={`nota-${udId}`} className="nota-container page-break font-calibri text-black bg-white">
         <div className="flex justify-between items-start mb-4">
             <div className="flex items-center gap-4">
                 <img src="/logo esc.png" alt="ESC Logo" className="h-16 w-auto" />
@@ -164,8 +164,8 @@ const TemplateESC = ({ data, udData }) => (
 );
 
 // Template 2: UD PILAR PANGAN MANDIRI
-const TemplatePilarPangan = ({ data, udData }) => (
-    <div className="nota-container page-break font-times text-black">
+const TemplatePilarPangan = ({ data, udData, udId }) => (
+    <div id={`nota-${udId}`} className="nota-container page-break font-times text-black bg-white">
         {/* Watermark Logo */}
         <img src="/logo pilar pangan.jpg" alt="Watermark" className="watermark" />
 
@@ -233,8 +233,8 @@ const TemplatePilarPangan = ({ data, udData }) => (
 );
 
 // Template 3: UD. AMANAH SUMBER MAKMUR (ASM)
-const TemplateASM = ({ data, udData }) => (
-    <div className="nota-container page-break font-trebuchet text-black">
+const TemplateASM = ({ data, udData, udId }) => (
+    <div id={`nota-${udId}`} className="nota-container page-break font-trebuchet text-black bg-white">
         <div className="flex justify-between items-start mb-4">
             <div className="flex flex-col items-center flex-1">
                 <img src="/logo asm.png" alt="ASM Logo" className="h-16 w-auto" />
@@ -313,8 +313,8 @@ const TemplateASM = ({ data, udData }) => (
 );
 
 // Template 4: UD. BANYU MAS
-const TemplateBanyuMas = ({ data, udData }) => (
-    <div className="nota-container page-break font-arial text-black">
+const TemplateBanyuMas = ({ data, udData, udId }) => (
+    <div id={`nota-${udId}`} className="nota-container page-break font-arial text-black bg-white">
         <div className="flex justify-between items-start mb-4">
             <div className="border border-black">
                 <table className="text-sm">
@@ -392,29 +392,33 @@ const TemplateBanyuMas = ({ data, udData }) => (
     </div>
 );
 
-export default function NotaDapur({ data, itemsByUD }) {
+export default function NotaDapur({ data, itemsByUD, udIdFilter = null }) {
     if (!data || !itemsByUD) return null;
 
-    const getTemplate = (udName, udData) => {
+    const getTemplate = (udName, udData, udId) => {
         const name = udName.toUpperCase();
         if (name.includes('SAUDARA') || name.includes('ESC')) {
-            return <TemplateESC key={udName} data={data} udData={udData} />;
+            return <TemplateESC key={udName} data={data} udData={udData} udId={udId} />;
         } else if (name.includes('PILAR') || name.includes('BMJ') || name.includes('MAHABBAH JAYA')) {
-            return <TemplatePilarPangan key={udName} data={data} udData={udData} />;
+            return <TemplatePilarPangan key={udName} data={data} udData={udData} udId={udId} />;
         } else if (name.includes('AMANAH') || name.includes('ASM')) {
-            return <TemplateASM key={udName} data={data} udData={udData} />;
+            return <TemplateASM key={udName} data={data} udData={udData} udId={udId} />;
         } else if (name.includes('BANYU MAS') || name.includes('BANYUMAS')) {
-            return <TemplateBanyuMas key={udName} data={data} udData={udData} />;
+            return <TemplateBanyuMas key={udName} data={data} udData={udData} udId={udId} />;
         }
         // Default to TemplateESC if no match
-        return <TemplateESC key={udName} data={data} udData={udData} />;
+        return <TemplateESC key={udName} data={data} udData={udData} udId={udId} />;
     };
+
+    const filteredEntries = udIdFilter
+        ? Object.entries(itemsByUD).filter(([id]) => id === udIdFilter)
+        : Object.entries(itemsByUD);
 
     return (
         <div id="print-area" className="hidden print:block">
             <PrintStyles />
-            {Object.entries(itemsByUD).map(([udId, udData]) =>
-                getTemplate(udData.nama_ud, udData)
+            {filteredEntries.map(([udId, udData]) =>
+                getTemplate(udData.nama_ud, udData, udId)
             )}
         </div>
     );
