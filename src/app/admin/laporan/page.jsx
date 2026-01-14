@@ -66,13 +66,31 @@ export default function LaporanPage() {
             };
             const response = await transaksiAPI.getAll(params);
             if (response.data.success) {
+                const selectedPeriode = filterPeriode ? periodeList.find(p => p._id === filterPeriode) : null;
+
                 // Fetch full details for each transaction
-                const detailedTransactions = await Promise.all(
+                const detailedTransactions = (await Promise.all(
                     response.data.data.map(async (trx) => {
                         const detailRes = await transaksiAPI.getById(trx._id);
                         return detailRes.data.success ? detailRes.data.data : trx;
                     })
-                );
+                )).filter(trx => {
+                    const isCompleted = trx.status === 'completed';
+                    if (!selectedPeriode) return isCompleted;
+
+                    // Unified local date string helper
+                    const toLocalDate = (dateStr) => {
+                        const d = new Date(dateStr);
+                        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                    };
+
+                    const trxDate = toLocalDate(trx.tanggal);
+                    const startDate = toLocalDate(selectedPeriode.tanggal_mulai);
+                    const endDate = toLocalDate(selectedPeriode.tanggal_selesai);
+
+                    const isInRange = trxDate >= startDate && trxDate <= endDate;
+                    return isCompleted && isInRange;
+                });
                 setTransactions(detailedTransactions);
                 toast.success(`Ditemukan ${detailedTransactions.length} transaksi`);
             }
