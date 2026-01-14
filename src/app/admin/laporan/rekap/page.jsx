@@ -41,10 +41,18 @@ export default function LaporanRekapPage() {
     const [generating, setGenerating] = useState(false);
     const [groupedData, setGroupedData] = useState({});
     const [selectedUDData, setSelectedUDData] = useState(null);
+    const [lastFilterHash, setLastFilterHash] = useState('');
 
     useEffect(() => {
         fetchOptions();
     }, []);
+
+    // Clear data when filters change to prevent stale display
+    useEffect(() => {
+        setTransactions([]);
+        setGroupedData({});
+        setSelectedUDData(null);
+    }, [filterPeriode, filterUD]);
 
     const fetchOptions = async () => {
         try {
@@ -69,31 +77,47 @@ export default function LaporanRekapPage() {
     };
 
     const fetchTransactions = async () => {
-        if (!filterPeriode) {
-            toast.warning('Pilih periode terlebih dahulu');
-            return;
-        }
-
-        const selectedPeriode = periodeList.find(p => p._id === filterPeriode);
-        if (!selectedPeriode) return;
+        const selectedPeriode = filterPeriode ? periodeList.find(p => p._id === filterPeriode) : null;
 
         try {
             setLoading(true);
             const params = {
                 limit: 2000,
                 status: 'completed',
-                tanggal_mulai: selectedPeriode.tanggal_mulai,
-                tanggal_selesai: selectedPeriode.tanggal_selesai,
+                periode_id: filterPeriode || undefined,
             };
+
+            // If a period is selected, we can also pass start/end dates to the API for optimization
+            if (selectedPeriode) {
+                params.tanggal_mulai = selectedPeriode.tanggal_mulai;
+                params.tanggal_selesai = selectedPeriode.tanggal_selesai;
+            }
+
             const response = await transaksiAPI.getAll(params);
             if (response.data.success) {
                 // Fetch full details for each transaction to get items and UD info
-                const detailedTransactions = await Promise.all(
+                const detailedTransactions = (await Promise.all(
                     response.data.data.map(async (trx) => {
                         const detailRes = await transaksiAPI.getById(trx._id);
                         return detailRes.data.success ? detailRes.data.data : trx;
                     })
-                );
+                )).filter(trx => {
+                    const isCompleted = trx.status === 'completed';
+                    if (!selectedPeriode) return isCompleted;
+
+                    // Unified local date string helper
+                    const toLocalDate = (dateStr) => {
+                        const d = new Date(dateStr);
+                        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                    };
+
+                    const trxDate = toLocalDate(trx.tanggal);
+                    const startDate = toLocalDate(selectedPeriode.tanggal_mulai);
+                    const endDate = toLocalDate(selectedPeriode.tanggal_selesai);
+
+                    const isInRange = trxDate >= startDate && trxDate <= endDate;
+                    return isCompleted && isInRange;
+                });
 
                 processGroupedData(detailedTransactions);
                 setTransactions(detailedTransactions);
@@ -106,7 +130,11 @@ export default function LaporanRekapPage() {
                     setSelectedUDData(null);
                 }
 
-                toast.success(`Ditemukan ${detailedTransactions.length} transaksi`);
+                if (detailedTransactions.length === 0) {
+                    toast.info('Tidak ditemukan transaksi pada kriteria ini');
+                } else {
+                    toast.success(`Ditemukan ${detailedTransactions.length} transaksi`);
+                }
             }
         } catch (error) {
             toast.error(getErrorMessage(error));
