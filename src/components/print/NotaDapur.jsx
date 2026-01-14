@@ -64,7 +64,7 @@ const PrintStyles = () => (
             border: 1px solid black;
             padding: 4px 8px;
             text-align: left;
-            font-size: 12px;
+            font-size: 16px;
         }
         .nota-table th {
             background-color: #f2f2f2;
