@@ -161,6 +161,27 @@ export const exportLaporanExcel = async ({
         ws1.addRow([]); // Gap between dates
     });
 
+    // Final Recap Block for Sheet 1
+    ws1.addRow([]);
+    const grandTotalRow = ws1.addRow(['GRAND TOTAL KESELURUHAN']);
+    ws1.mergeCells(`A${grandTotalRow.number}:I${grandTotalRow.number}`);
+    grandTotalRow.font = { bold: true, size: 12 };
+    grandTotalRow.alignment = { horizontal: 'center' };
+
+    ws1.addRow(['Rekapitulasi seluruh periode yang dipilih']);
+
+    const rowFinalJual = ws1.addRow(['Total Penjualan', '', '', '', '', totalJualAll]);
+    setCurrency(rowFinalJual.getCell(6));
+    rowFinalJual.font = { bold: true };
+
+    const rowFinalModal = ws1.addRow(['Total Modal', '', '', '', '', totalModalAll]);
+    setCurrency(rowFinalModal.getCell(6));
+    rowFinalModal.font = { bold: true };
+
+    const rowFinalUntung = ws1.addRow(['Total Keuntungan', '', '', '', '', totalUntungAll]);
+    setCurrency(rowFinalUntung.getCell(6));
+    rowFinalUntung.font = { bold: true, color: { argb: 'FF00B050' } }; // Green for profit
+
     // --- Sheets per UD ---
     itemsByUD.forEach((ud) => {
         const sheetName = `LAP. UD. ${ud.nama_ud}`.substring(0, 31).replace(/[\[\]\*\?\/\\]/g, '');
@@ -183,24 +204,56 @@ export const exportLaporanExcel = async ({
         const headerRow = wsUD.addRow(['No.', 'Nama Barang', 'Qty', 'Satuan', 'Harga Jual Suplier', 'Total Harga Jual Suplier', 'Harga Modal Suplier', 'Jumlah Modal Suplier', 'Keuntungan']);
         applyRowStyle(headerRow, STYLES.header);
 
-        ud.items.forEach((item, idx) => {
-            const row = wsUD.addRow([
-                idx + 1,
-                item.nama_barang || item.barang_id?.nama_barang || '-',
-                item.qty,
-                item.satuan || item.barang_id?.satuan || '-',
-                item.harga_jual,
-                item.subtotal_jual,
-                item.harga_modal,
-                item.subtotal_modal,
-                item.keuntungan
-            ]);
-            applyRowStyle(row, STYLES.yellowRow);
-            [5, 6, 7, 8, 9].forEach(col => setCurrency(row.getCell(col)));
+        // Group items by date for this UD
+        const udGroupedByDate = {};
+        ud.items.forEach(item => {
+            const dateKey = item.tanggal.split('T')[0];
+            if (!udGroupedByDate[dateKey]) udGroupedByDate[dateKey] = [];
+            udGroupedByDate[dateKey].push(item);
         });
 
-        // Total
-        const totalRow = wsUD.addRow(['', 'TOTAL', '', '', '', ud.totalJual, '', ud.totalModal, ud.totalKeuntungan]);
+        const sortedUdDates = Object.keys(udGroupedByDate).sort((a, b) => new Date(b) - new Date(a));
+
+        sortedUdDates.forEach(dateKey => {
+            // Date Header Row within UD Sheet
+            const dateRow = wsUD.addRow([formatIndoDate(dateKey).toUpperCase()]);
+            wsUD.mergeCells(`A${dateRow.number}:I${dateRow.number}`);
+            applyRowStyle(dateRow, STYLES.dateTitle);
+
+            let dailyJual = 0;
+            let dailyModal = 0;
+            let dailyProfit = 0;
+
+            udGroupedByDate[dateKey].forEach((item, idx) => {
+                const row = wsUD.addRow([
+                    idx + 1,
+                    item.nama_barang || item.barang_id?.nama_barang || '-',
+                    item.qty,
+                    item.satuan || item.barang_id?.satuan || '-',
+                    item.harga_jual,
+                    item.subtotal_jual,
+                    item.harga_modal,
+                    item.subtotal_modal,
+                    item.keuntungan
+                ]);
+                applyRowStyle(row, STYLES.yellowRow);
+                [5, 6, 7, 8, 9].forEach(col => setCurrency(row.getCell(col)));
+
+                dailyJual += item.subtotal_jual;
+                dailyModal += item.subtotal_modal;
+                dailyProfit += item.keuntungan;
+            });
+
+            // Daily Subtotal for this UD
+            const subtotalRow = wsUD.addRow([`Subtotal ${formatDateShort(dateKey)}`, '', '', '', '', dailyJual, '', dailyModal, dailyProfit]);
+            applyRowStyle(subtotalRow, STYLES.subtotalRow);
+            [6, 8, 9].forEach(col => setCurrency(subtotalRow.getCell(col)));
+
+            wsUD.addRow([]); // Small gap after each date group
+        });
+
+        // Final Total for UD
+        const totalRow = wsUD.addRow(['', 'GRAND TOTAL UD', '', '', '', ud.totalJual, '', ud.totalModal, ud.totalKeuntungan]);
         applyRowStyle(totalRow, STYLES.totalRow);
         [6, 8, 9].forEach(col => setCurrency(totalRow.getCell(col)));
     });
