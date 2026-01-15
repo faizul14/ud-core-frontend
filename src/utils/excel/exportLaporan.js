@@ -125,9 +125,9 @@ export const exportLaporanExcel = async ({
             group.items.forEach((item, idx) => {
                 const row = ws1.addRow([
                     idx + 1,
-                    item.nama_barang || '-',
+                    item.nama_barang || item.barang_id?.nama_barang || '-',
                     item.qty,
-                    item.satuan || '-',
+                    item.satuan || item.barang_id?.satuan || '-',
                     item.harga_jual,
                     item.subtotal_jual,
                     item.harga_modal,
@@ -186,9 +186,9 @@ export const exportLaporanExcel = async ({
         ud.items.forEach((item, idx) => {
             const row = wsUD.addRow([
                 idx + 1,
-                item.nama_barang || '-',
+                item.nama_barang || item.barang_id?.nama_barang || '-',
                 item.qty,
-                item.satuan || '-',
+                item.satuan || item.barang_id?.satuan || '-',
                 item.harga_jual,
                 item.subtotal_jual,
                 item.harga_modal,
