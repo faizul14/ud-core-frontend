@@ -260,6 +260,9 @@ export default function DashboardPage() {
             <div className="col-span-12">
                 <QuickActions />
             </div>
+
+            {/* Mobile Bottom Bar */}
+            <QuickActions variant="bottom-bar" />
         </div>
     );
 }

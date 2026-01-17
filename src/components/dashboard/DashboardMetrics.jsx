@@ -36,13 +36,13 @@ const DashboardMetrics = ({ stats }) => {
     ];
 
     return (
-        <div className="grid grid-cols-2 gap-3 md:gap-6 px-2 md:px-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 px-2 md:px-0">
             {metrics.map((metric, index) => {
                 const Icon = metric.icon;
                 return (
                     <div
                         key={index}
-                        className="rounded-2xl border border-gray-200 bg-white p-4 md:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
+                        className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6 dark:border-gray-800 dark:bg-white/[0.03] shadow-sm hover:shadow-md transition-shadow"
                     >
                         <div className={`flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-xl ${metric.iconBg}`}>
                             <Icon className={`w-5 h-5 md:w-6 md:h-6 ${metric.iconColor}`} />

@@ -55,7 +55,7 @@ const SalesDistributionChart = ({ data = [] }) => {
                             <Pie
                                 data={data}
                                 cx="50%"
-                                cy={isMobile ? "40%" : "50%"}
+                                cy="50%"
                                 innerRadius={isMobile ? 45 : 60}
                                 outerRadius={isMobile ? 80 : 100}
                                 fill="#8884d8"
@@ -77,13 +77,13 @@ const SalesDistributionChart = ({ data = [] }) => {
                                 formatter={(value) => formatCurrency(value)}
                             />
                             <Legend
-                                layout={isMobile ? "horizontal" : "vertical"}
-                                verticalAlign={isMobile ? "bottom" : "middle"}
-                                align={isMobile ? "center" : "right"}
+                                layout="horizontal"
+                                verticalAlign="bottom"
+                                align="center"
                                 iconType="circle"
                                 wrapperStyle={{
                                     fontSize: '11px',
-                                    paddingTop: isMobile ? '20px' : '0'
+                                    paddingTop: '20px'
                                 }}
                             />
                         </PieChart>
