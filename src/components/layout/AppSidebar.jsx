@@ -73,7 +73,7 @@ const transactionItems = [
         name: 'Cetak Laporan',
         path: '/admin/laporan',
     },
-    
+
 ];
 
 const othersItems = [
@@ -186,7 +186,7 @@ const AppSidebar = () => {
             </div>
 
             {/* Navigation */}
-            <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
+            <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar pb-28">
                 <nav className="mb-6">
                     <div className="flex flex-col gap-4">
                         {/* Main Menu */}

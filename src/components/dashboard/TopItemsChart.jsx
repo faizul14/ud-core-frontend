@@ -59,7 +59,7 @@ const TopItemsChart = ({ data = [] }) => {
                         <BarChart
                             data={data}
                             layout="vertical"
-                            margin={{ top: 5, right: 20, left: isMobile ? -20 : 0, bottom: 5 }}
+                            margin={{ top: 5, right: isMobile ? 10 : 20, left: isMobile ? -30 : 0, bottom: 5 }}
                         >
                             <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e5e7eb" opacity={0.5} />
                             <XAxis type="number" hide />

@@ -255,71 +255,75 @@ export default function TransaksiListPage() {
                             <table className="w-full">
                                 <thead className="bg-gray-50 border-b border-gray-200">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-12">
+                                        <th className="px-3 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-10">
                                             No
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <th className="px-3 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-32">
                                             Kode
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
                                             Dapur
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider lg:table-cell">
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider hidden xl:table-cell">
                                             Periode
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden xl:table-cell">
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider hidden 2xl:table-cell">
                                             Tanggal
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <th className="px-4 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">
                                             Total
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider hidden lg:table-cell">
-                                            Keuntungan
+                                        <th className="px-4 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider hidden lg:table-cell">
+                                            Untung
                                         </th>
-                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">
                                             Status
                                         </th>
-                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-20">
                                             Aksi
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {data.map((item, index) => (
-                                        <tr key={item._id} className="hover:bg-blue-50/30 transition-colors">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <tr key={item._id} className="hover:bg-blue-50/30 transition-colors border-b border-gray-100 last:border-0">
+                                            <td className="px-3 py-4 whitespace-nowrap text-xs text-gray-500 font-medium">
                                                 {(pagination.page - 1) * pagination.limit + index + 1}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className="font-mono text-xs font-bold bg-gray-100 px-2 py-1 rounded text-gray-700 border border-gray-200">
+                                            <td className="px-3 py-4 whitespace-nowrap">
+                                                <span className="font-mono text-[10px] font-bold bg-gray-100 px-1.5 py-0.5 rounded text-gray-700 border border-gray-200">
                                                     {item.kode_transaksi}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <p className="font-semibold text-gray-900">{item.dapur_id?.nama_dapur || '-'}</p>
+                                            <td className="px-4 py-4 max-w-[150px] lg:max-w-xs">
+                                                <p className="font-bold text-gray-900 text-sm truncate" title={item.dapur_id?.nama_dapur}>
+                                                    {item.dapur_id?.nama_dapur || '-'}
+                                                </p>
                                             </td>
-                                            <td className="px-6 py-4 lg:table-cell">
-                                                <p className="text-gray-600 text-sm">{item.periode_id?.nama_periode || '-'}</p>
+                                            <td className="px-4 py-4 hidden xl:table-cell max-w-[120px]">
+                                                <p className="text-gray-600 text-sm truncate" title={item.periode_id?.nama_periode}>
+                                                    {item.periode_id?.nama_periode || '-'}
+                                                </p>
                                             </td>
-                                            <td className="px-6 py-4 hidden xl:table-cell">
+                                            <td className="px-4 py-4 hidden 2xl:table-cell whitespace-nowrap">
                                                 <p className="text-gray-500 text-sm">{formatDateShort(item.tanggal)}</p>
                                             </td>
-                                            <td className="px-6 py-4 text-right font-bold text-gray-900">
+                                            <td className="px-4 py-4 text-right font-black text-gray-900 text-sm whitespace-nowrap">
                                                 {formatCurrency(item.total_harga_jual)}
                                             </td>
-                                            <td className="px-6 py-4 text-right hidden lg:table-cell">
-                                                <span className="text-green-600 font-bold">
+                                            <td className="px-4 py-4 text-right hidden lg:table-cell whitespace-nowrap">
+                                                <span className="text-green-600 font-bold text-sm">
                                                     {formatCurrency(item.total_keuntungan)}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-center">
+                                            <td className="px-4 py-4 text-center">
                                                 {getStatusBadge(item.status)}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center justify-center gap-1">
+                                            <td className="px-4 py-4">
+                                                <div className="flex items-center justify-center gap-0.5">
                                                     <Link
                                                         href={`/admin/transaksi/${item._id}`}
-                                                        className="p-2 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors"
+                                                        className="p-1.5 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors"
                                                         title="Lihat Detail"
                                                     >
                                                         <Eye className="w-4 h-4" />
@@ -328,7 +332,7 @@ export default function TransaksiListPage() {
                                                         <>
                                                             <Link
                                                                 href={`/admin/transaksi/${item._id}/edit`}
-                                                                className="p-2 hover:bg-yellow-100 rounded-lg text-yellow-600 transition-colors"
+                                                                className="p-1.5 hover:bg-yellow-100 rounded-lg text-yellow-600 transition-colors"
                                                                 title="Edit Transaksi"
                                                             >
                                                                 <Edit className="w-4 h-4" />
@@ -338,7 +342,7 @@ export default function TransaksiListPage() {
                                                                     setDeletingItem(item);
                                                                     setDeleteDialogOpen(true);
                                                                 }}
-                                                                className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors"
+                                                                className="p-1.5 hover:bg-red-100 rounded-lg text-red-600 transition-colors"
                                                                 title="Hapus Transaksi"
                                                             >
                                                                 <Trash2 className="w-4 h-4" />
