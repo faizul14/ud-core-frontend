@@ -304,35 +304,37 @@ export default function TransaksiDetailPage() {
                             <table className="w-full">
                                 <thead className="bg-gray-50/50 border-b border-gray-100">
                                     <tr>
-                                        <th className="text-left px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">No</th>
-                                        <th className="text-left px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Nama Barang</th>
-                                        <th className="text-center px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Satuan</th>
-                                        <th className="text-center px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Qty</th>
-                                        <th className="text-right px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Hrg Modal</th>
-                                        <th className="text-right px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Hrg Jual</th>
-                                        <th className="text-right px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Subtotal</th>
+                                        <th className="text-left px-3 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap w-10">No</th>
+                                        <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Nama Barang</th>
+                                        <th className="text-center px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap w-24">Satuan</th>
+                                        <th className="text-center px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap w-16">Qty</th>
+                                        <th className="text-right px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Hrg Modal</th>
+                                        <th className="text-right px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Hrg Jual</th>
+                                        <th className="text-right px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Subtotal</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {udData.items.map((item, index) => (
-                                        <tr key={item._id} className="hover:bg-blue-50/30 transition-colors">
-                                            <td className="px-6 py-4 text-xs font-bold text-gray-400">{index + 1}</td>
-                                            <td className="px-6 py-4 font-bold text-gray-900">
-                                                {item.nama_barang || item.barang_id?.nama_barang || '-'}
+                                        <tr key={item._id} className="hover:bg-blue-50/30 transition-colors border-b border-gray-100 last:border-0">
+                                            <td className="px-3 py-4 text-[10px] font-bold text-gray-400">{(index + 1).toString().padStart(2, '0')}</td>
+                                            <td className="px-4 py-4 max-w-[200px] lg:max-w-md">
+                                                <p className="font-bold text-gray-900 text-sm truncate" title={item.nama_barang || item.barang_id?.nama_barang}>
+                                                    {item.nama_barang || item.barang_id?.nama_barang || '-'}
+                                                </p>
                                             </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="px-2 py-1 text-[10px] font-bold bg-gray-100 text-gray-600 rounded-md uppercase">
+                                            <td className="px-4 py-4 text-center">
+                                                <span className="px-2 py-0.5 text-[10px] font-bold bg-gray-100 text-gray-600 rounded-md uppercase whitespace-nowrap">
                                                     {item.satuan || item.barang_id?.satuan || '-'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-center font-bold text-gray-700">{item.qty}</td>
-                                            <td className="px-6 py-4 text-right text-sm text-gray-500 font-medium">
+                                            <td className="px-4 py-4 text-center font-bold text-gray-700 text-sm">{item.qty}</td>
+                                            <td className="px-4 py-4 text-right text-xs text-gray-500 font-medium whitespace-nowrap">
                                                 {formatCurrency(item.harga_modal)}
                                             </td>
-                                            <td className="px-6 py-4 text-right text-sm text-gray-600 font-bold">
+                                            <td className="px-4 py-4 text-right text-xs text-gray-600 font-bold whitespace-nowrap">
                                                 {formatCurrency(item.harga_jual)}
                                             </td>
-                                            <td className="px-6 py-4 text-right font-black text-blue-600 tracking-tight">
+                                            <td className="px-4 py-4 text-right font-black text-blue-600 tracking-tight text-sm whitespace-nowrap">
                                                 {formatCurrency(item.subtotal_jual)}
                                             </td>
                                         </tr>

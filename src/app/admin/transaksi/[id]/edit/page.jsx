@@ -492,15 +492,14 @@ export default function EditTransaksiPage() {
                             <table className="w-full">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 uppercase">No</th>
-                                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Nama Barang</th>
-                                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 uppercase">UD</th>
-                                        <th className="text-center px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Satuan</th>
-                                        <th className="text-center px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Qty</th>
-                                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Harga Modal</th>
-                                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Harga Jual</th>
-                                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Subtotal</th>
-                                        <th className="text-center px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Aksi</th>
+                                        <th className="text-left px-2 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest w-8">No</th>
+                                        <th className="text-left px-3 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Barang & UD</th>
+                                        <th className="text-center px-2 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest w-16">Satuan</th>
+                                        <th className="text-center px-2 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest w-16">Qty</th>
+                                        <th className="text-right px-2 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest w-28">Modal</th>
+                                        <th className="text-right px-2 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest w-28">Jual</th>
+                                        <th className="text-right px-3 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest w-28">Subtotal</th>
+                                        <th className="text-center px-2 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest w-12">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -523,24 +522,26 @@ export default function EditTransaksiPage() {
                                         </tr>
                                     ) : (
                                         filteredItems.map((item, index) => (
-                                            <tr key={item.barang_id} className="hover:bg-gray-50 transition-colors">
-                                                <td className="px-4 py-4 text-gray-600">{index + 1}</td>
-                                                <td className="px-4 py-4">
-                                                    <p className="font-medium text-gray-900">{item.nama_barang}</p>
+                                            <tr key={item.barang_id} className="hover:bg-blue-50/20 transition-colors border-b border-gray-100 last:border-0">
+                                                <td className="px-2 py-4 text-[10px] font-bold text-gray-400">{(index + 1).toString().padStart(2, '0')}</td>
+                                                <td className="px-3 py-4 max-w-[150px] lg:max-w-xs">
+                                                    <p className="font-bold text-gray-900 text-sm truncate leading-tight" title={item.nama_barang}>
+                                                        {item.nama_barang}
+                                                    </p>
+                                                    <div className="flex flex-col mt-0.5">
+                                                        <span className="text-[10px] text-blue-600 font-bold leading-none truncate">{item.ud_nama}</span>
+                                                        <span className="text-[8px] text-gray-400 font-medium leading-none mt-0.5">{item.ud_kode}</span>
+                                                    </div>
                                                 </td>
-                                                <td className="px-4 py-4">
-                                                    <p className="text-sm text-gray-600">{item.ud_nama}</p>
-                                                    <p className="text-xs text-gray-400">{item.ud_kode}</p>
-                                                </td>
-                                                <td className="px-4 py-4 text-center">
+                                                <td className="px-2 py-4 text-center">
                                                     <input
                                                         type="text"
                                                         value={item.satuan}
                                                         onChange={(e) => handleSatuanChange(index, e.target.value)}
-                                                        className="w-20 px-2 py-1.5 border border-gray-200 rounded-md text-center focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-xs font-medium"
+                                                        className="w-14 px-1 py-1.5 border border-gray-200 rounded-md text-center focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-[10px] font-bold uppercase"
                                                     />
                                                 </td>
-                                                <td className="px-4 py-4">
+                                                <td className="px-2 py-4">
                                                     <input
                                                         type="number"
                                                         value={item.qty}
@@ -548,36 +549,36 @@ export default function EditTransaksiPage() {
                                                         onFocus={(e) => e.target.select()}
                                                         min="0.01"
                                                         step="any"
-                                                        className="w-24 px-2 py-1.5 border border-gray-200 rounded-md text-center focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                                                        className="w-16 px-1 py-1.5 border border-gray-200 rounded-md text-center focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-xs font-bold"
                                                     />
                                                 </td>
-                                                <td className="px-4 py-4">
+                                                <td className="px-2 py-4">
                                                     <input
                                                         type="number"
                                                         value={item.harga_modal}
                                                         onChange={(e) => handleHargaModalChange(index, e.target.value)}
                                                         onFocus={(e) => e.target.select()}
                                                         min="0"
-                                                        className="w-32 px-2 py-1.5 border border-gray-200 rounded-md text-right focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                                                        className="w-24 px-2 py-1.5 border border-gray-200 rounded-md text-right focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-xs font-medium"
                                                     />
                                                 </td>
-                                                <td className="px-4 py-4">
+                                                <td className="px-2 py-4">
                                                     <input
                                                         type="number"
                                                         value={item.harga_jual}
                                                         onChange={(e) => handleHargaJualChange(index, e.target.value)}
                                                         onFocus={(e) => e.target.select()}
                                                         min="0"
-                                                        className="w-32 px-2 py-1.5 border border-gray-200 rounded-md text-right focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                                                        className="w-24 px-2 py-1.5 border border-gray-200 rounded-md text-right focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-xs font-bold text-gray-900"
                                                     />
                                                 </td>
-                                                <td className="px-4 py-4 text-right font-semibold text-gray-900">
+                                                <td className="px-3 py-4 text-right font-black text-blue-600 text-xs whitespace-nowrap">
                                                     {formatCurrency(calculateSubtotal(item))}
                                                 </td>
-                                                <td className="px-4 py-4 text-center">
+                                                <td className="px-2 py-4 text-center">
                                                     <button
                                                         onClick={() => handleRemoveItem(index)}
-                                                        className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                                                        className="p-1.5 hover:bg-red-50 rounded-lg text-red-500 transition-colors"
                                                         title="Hapus Barang"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
