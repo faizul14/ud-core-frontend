@@ -15,7 +15,7 @@ export const downloadPDF = async (elementId, filename = 'nota.pdf') => {
 
     try {
         const canvas = await html2canvas(element, {
-            scale: 2,
+            scale: 1.5,
             useCORS: true,
             logging: false,
             backgroundColor: '#ffffff',
@@ -26,13 +26,19 @@ export const downloadPDF = async (elementId, filename = 'nota.pdf') => {
                     clonedElement.style.display = 'block';
                     clonedElement.style.visibility = 'visible';
                     clonedElement.style.position = 'relative';
-                    clonedElement.style.width = '800px'; // Concrete width for layout
+                    clonedElement.style.width = '800px';
+                    clonedElement.style.height = 'auto';
+                    clonedElement.style.minHeight = 'min-content';
+                    clonedElement.style.overflow = 'visible';
 
-                    // Ensure all parent elements in the clone are also visible
+                    // Ensure all parent elements in the clone are also expanded and visible
                     let parent = clonedElement.parentElement;
                     while (parent && parent.tagName !== 'HTML') {
                         parent.style.display = 'block';
                         parent.style.visibility = 'visible';
+                        parent.style.height = 'auto';
+                        parent.style.minHeight = 'min-content';
+                        parent.style.overflow = 'visible';
                         parent = parent.parentElement;
                     }
                 }
@@ -47,15 +53,33 @@ export const downloadPDF = async (elementId, filename = 'nota.pdf') => {
             orientation: 'p',
             unit: 'mm',
             format: 'a4',
+            compress: true, // Aktifkan kompresi internal PDF
         });
 
         const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-        const imgData = canvas.toDataURL('image/png');
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(filename);
+        // Gunakan JPEG dengan kualitas 0.7 untuk kompresi file yang signifikan (jauh lebih kecil dari PNG)
+        const imgData = canvas.toDataURL('image/jpeg', 0.7);
 
+        // Handle multi-page
+        let heightLeft = pdfHeight;
+        let position = 0;
+
+        // Add the first page
+        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight, undefined, 'FAST');
+        heightLeft -= pageHeight;
+
+        // Add extra pages if needed
+        while (heightLeft > 0) {
+            position = heightLeft - pdfHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight, undefined, 'FAST');
+            heightLeft -= pageHeight;
+        }
+
+        pdf.save(filename);
         return true;
     } catch (error) {
         console.error('Error generating PDF:', error);
