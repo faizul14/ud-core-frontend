@@ -226,6 +226,7 @@ export default function LaporanDapurPage() {
 
             const tableData = [];
             const itemsByDate = getItemsByDate();
+            let grandTotal = 0;
 
             itemsByDate.forEach((group) => {
                 // Date Header Row
@@ -253,11 +254,34 @@ export default function LaporanDapurPage() {
                     ]);
                 });
                 const dailyTotal = group.items.reduce((sum, i) => sum + i.subtotal_jual, 0);
+                grandTotal += dailyTotal;
                 tableData.push([
                     { content: `TOTAL ${formatDateShort(group.tanggal).toUpperCase()}`, colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', fillColor: [226, 232, 240] } },
                     { content: formatCurrency(dailyTotal), styles: { fontStyle: 'bold', fillColor: [226, 232, 240] } }
                 ]);
             });
+
+            // Grand Total Row
+            tableData.push([
+                {
+                    content: 'TOTAL KESELURUHAN',
+                    colSpan: 5,
+                    styles: {
+                        halign: 'right',
+                        fontStyle: 'bold',
+                        fillColor: [71, 85, 105],
+                        textColor: [255, 255, 255]
+                    }
+                },
+                {
+                    content: formatCurrency(grandTotal),
+                    styles: {
+                        fontStyle: 'bold',
+                        fillColor: [71, 85, 105],
+                        textColor: [255, 255, 255]
+                    }
+                }
+            ]);
 
             autoTable(doc, {
                 startY: filterTanggal ? 40 : 35,
