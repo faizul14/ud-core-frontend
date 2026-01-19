@@ -23,6 +23,7 @@ const PDFStyles = () => (
             padding: 20px;
             position: relative;
             z-index: 1;
+            min-height: min-content;
         }
         .watermark {
             position: absolute;
@@ -41,7 +42,7 @@ const PDFStyles = () => (
         }
         .nota-table th, .nota-table td {
             border: 1px solid black;
-            padding:16px;
+            padding:8px 8px 16px 8px;
             text-align: left;
             font-size: 16px;
         }
@@ -465,7 +466,7 @@ export default function NotaDapur({ data, itemsByUD, udIdFilter = null }) {
         : Object.entries(itemsByUD);
 
     return (
-        <div id="pdf-area" className="hidden">
+        <div id="pdf-area" style={{ position: 'fixed', left: '-9999px', top: 0, width: '800px' }}>
             <PDFStyles />
             {filteredEntries.map(([udId, udData]) =>
                 getTemplate(udData.nama_ud, udData, udId)

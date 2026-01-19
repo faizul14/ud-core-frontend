@@ -129,6 +129,10 @@ export default function TransaksiDetailPage() {
             setDownloading(udId);
             const dateStr = data.tanggal ? new Date(data.tanggal).toISOString().split('T')[0] : 'date';
             const fileName = `Nota_${udName.replace(/\s+/g, '_')}_${dateStr}.pdf`;
+
+            // Beri waktu React untuk render komponen ke DOM
+            await new Promise(resolve => setTimeout(resolve, 300));
+
             await downloadPDF(`pdf-nota-${udId}`, fileName);
             toast.success('PDF berhasil diunduh');
         } catch (error) {
@@ -150,6 +154,9 @@ export default function TransaksiDetailPage() {
         try {
             setDownloadingAll(true);
             const dateStr = data.tanggal ? new Date(data.tanggal).toISOString().split('T')[0] : 'date';
+
+            // Beri waktu React untuk render komponen ke DOM
+            await new Promise(resolve => setTimeout(resolve, 300));
 
             for (const [udId, udData] of udEntries) {
                 const fileName = `Nota_${udData.nama_ud.replace(/\s+/g, '_')}_${dateStr}.pdf`;
@@ -443,6 +450,7 @@ export default function TransaksiDetailPage() {
                 <NotaDapurPDF
                     data={data}
                     itemsByUD={itemsByUD}
+                    udIdFilter={downloadingAll ? null : downloading}
                 />
             )}
         </div>
