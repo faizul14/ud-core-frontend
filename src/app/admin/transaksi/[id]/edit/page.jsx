@@ -290,39 +290,52 @@ export default function EditTransaksiPage() {
         }
     };
 
-    const handleQtyChange = (index, qty) => {
-        const newQty = Math.max(0.01, parseFloat(qty) || 0);
+    const handleQtyChange = (barangId, qty) => {
         setItems((prev) =>
-            prev.map((item, i) => (i === index ? { ...item, qty: newQty } : item))
+            prev.map((item) => (item.barang_id === barangId ? { ...item, qty: qty } : item))
         );
     };
 
-    const handleHargaJualChange = (index, harga) => {
+    const handleQtyBlur = (barangId) => {
+        setItems((prev) =>
+            prev.map((item) => {
+                if (item.barang_id === barangId) {
+                    const parsedQty = parseFloat(item.qty);
+                    const finalQty = parsedQty > 0 ? parsedQty : 0.01;
+                    return { ...item, qty: finalQty };
+                }
+                return item;
+            })
+        );
+    };
+
+    const handleHargaJualChange = (barangId, harga) => {
         const newHarga = Math.max(0, parseInt(harga) || 0);
         setItems((prev) =>
-            prev.map((item, i) => (i === index ? { ...item, harga_jual: newHarga } : item))
+            prev.map((item) => (item.barang_id === barangId ? { ...item, harga_jual: newHarga } : item))
         );
     };
 
-    const handleHargaModalChange = (index, harga) => {
+    const handleHargaModalChange = (barangId, harga) => {
         const newHarga = Math.max(0, parseInt(harga) || 0);
         setItems((prev) =>
-            prev.map((item, i) => (i === index ? { ...item, harga_modal: newHarga } : item))
+            prev.map((item) => (item.barang_id === barangId ? { ...item, harga_modal: newHarga } : item))
         );
     };
 
-    const handleSatuanChange = (index, value) => {
+    const handleSatuanChange = (barangId, value) => {
         setItems((prev) =>
-            prev.map((item, i) => (i === index ? { ...item, satuan: value } : item))
+            prev.map((item) => (item.barang_id === barangId ? { ...item, satuan: value } : item))
         );
     };
 
-    const handleRemoveItem = (index) => {
-        setItems((prev) => prev.filter((_, i) => i !== index));
+    const handleRemoveItem = (barangId) => {
+        setItems((prev) => prev.filter((item) => item.barang_id !== barangId));
     };
 
     const calculateSubtotal = (item) => {
-        return item.qty * item.harga_jual;
+        const qty = parseFloat(item.qty) || 0;
+        return qty * item.harga_jual;
     };
 
     const calculateTotal = () => {
@@ -330,7 +343,10 @@ export default function EditTransaksiPage() {
     };
 
     const calculateTotalModal = () => {
-        return items.reduce((sum, item) => sum + (item.qty * item.harga_modal), 0);
+        return items.reduce((sum, item) => {
+            const qty = parseFloat(item.qty) || 0;
+            return sum + (qty * item.harga_modal);
+        }, 0);
     };
 
     const handleSubmit = async (complete = false) => {
@@ -347,6 +363,13 @@ export default function EditTransaksiPage() {
             return;
         }
 
+        // Validate quantities
+        const invalidQty = items.some(item => (parseFloat(item.qty) || 0) <= 0);
+        if (invalidQty) {
+            toast.warning('Semua barang harus memiliki jumlah (qty) lebih dari 0');
+            return;
+        }
+
         try {
             setSubmitting(true);
 
@@ -356,7 +379,7 @@ export default function EditTransaksiPage() {
                 tanggal: tanggal.toISOString(),
                 items: items.map((item) => ({
                     barang_id: item.barang_id,
-                    qty: item.qty,
+                    qty: parseFloat(item.qty),
                     harga_jual: item.harga_jual,
                     harga_modal: item.harga_modal,
                     satuan: item.satuan,
@@ -576,8 +599,16 @@ export default function EditTransaksiPage() {
                                 value={tableSearch}
                                 onChange={(e) => setTableSearch(e.target.value)}
                                 placeholder="Filter barang di tabel..."
-                                className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                className="w-full pl-9 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                             />
+                            {tableSearch && (
+                                <button
+                                    onClick={() => setTableSearch('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X className="w-3.5 h-3.5 text-gray-400" />
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -632,7 +663,7 @@ export default function EditTransaksiPage() {
                                                     <input
                                                         type="text"
                                                         value={item.satuan}
-                                                        onChange={(e) => handleSatuanChange(index, e.target.value)}
+                                                        onChange={(e) => handleSatuanChange(item.barang_id, e.target.value)}
                                                         className="w-14 px-1 py-1.5 border border-gray-200 rounded-md text-center focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-[10px] font-bold uppercase"
                                                     />
                                                 </td>
@@ -640,9 +671,9 @@ export default function EditTransaksiPage() {
                                                     <input
                                                         type="number"
                                                         value={item.qty}
-                                                        onChange={(e) => handleQtyChange(index, e.target.value)}
+                                                        onChange={(e) => handleQtyChange(item.barang_id, e.target.value)}
+                                                        onBlur={() => handleQtyBlur(item.barang_id)}
                                                         onFocus={(e) => e.target.select()}
-                                                        min="0.01"
                                                         step="any"
                                                         className="w-16 px-1 py-1.5 border border-gray-200 rounded-md text-center focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-xs font-bold"
                                                     />
@@ -651,7 +682,7 @@ export default function EditTransaksiPage() {
                                                     <input
                                                         type="number"
                                                         value={item.harga_modal}
-                                                        onChange={(e) => handleHargaModalChange(index, e.target.value)}
+                                                        onChange={(e) => handleHargaModalChange(item.barang_id, e.target.value)}
                                                         onFocus={(e) => e.target.select()}
                                                         min="0"
                                                         className="w-24 px-2 py-1.5 border border-gray-200 rounded-md text-right focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-xs font-medium"
@@ -661,7 +692,7 @@ export default function EditTransaksiPage() {
                                                     <input
                                                         type="number"
                                                         value={item.harga_jual}
-                                                        onChange={(e) => handleHargaJualChange(index, e.target.value)}
+                                                        onChange={(e) => handleHargaJualChange(item.barang_id, e.target.value)}
                                                         onFocus={(e) => e.target.select()}
                                                         min="0"
                                                         className="w-24 px-2 py-1.5 border border-gray-200 rounded-md text-right focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-xs font-bold text-gray-900"
@@ -672,7 +703,7 @@ export default function EditTransaksiPage() {
                                                 </td>
                                                 <td className="px-2 py-4 text-center">
                                                     <button
-                                                        onClick={() => handleRemoveItem(index)}
+                                                        onClick={() => handleRemoveItem(item.barang_id)}
                                                         className="p-1.5 hover:bg-red-50 rounded-lg text-red-500 transition-colors"
                                                         title="Hapus Barang"
                                                     >
@@ -715,13 +746,13 @@ export default function EditTransaksiPage() {
                                                         <input
                                                             type="text"
                                                             value={item.satuan}
-                                                            onChange={(e) => handleSatuanChange(index, e.target.value)}
+                                                            onChange={(e) => handleSatuanChange(item.barang_id, e.target.value)}
                                                             className="w-16 px-1.5 py-0.5 border border-gray-200 rounded text-[10px] font-medium focus:ring-1 focus:ring-blue-500/20 outline-none"
                                                         />
                                                     </div>
                                                 </div>
                                                 <button
-                                                    onClick={() => handleRemoveItem(index)}
+                                                    onClick={() => handleRemoveItem(item.barang_id)}
                                                     className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
                                                 >
                                                     <Trash2 className="w-5 h-5" />
@@ -734,9 +765,9 @@ export default function EditTransaksiPage() {
                                                     <input
                                                         type="number"
                                                         value={item.qty}
-                                                        onChange={(e) => handleQtyChange(index, e.target.value)}
+                                                        onChange={(e) => handleQtyChange(item.barang_id, e.target.value)}
+                                                        onBlur={() => handleQtyBlur(item.barang_id)}
                                                         onFocus={(e) => e.target.select()}
-                                                        min="0.01"
                                                         step="any"
                                                         className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
                                                     />
@@ -755,7 +786,7 @@ export default function EditTransaksiPage() {
                                                     <input
                                                         type="number"
                                                         value={item.harga_modal}
-                                                        onChange={(e) => handleHargaModalChange(index, e.target.value)}
+                                                        onChange={(e) => handleHargaModalChange(item.barang_id, e.target.value)}
                                                         onFocus={(e) => e.target.select()}
                                                         className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
                                                     />
@@ -765,7 +796,7 @@ export default function EditTransaksiPage() {
                                                     <input
                                                         type="number"
                                                         value={item.harga_jual}
-                                                        onChange={(e) => handleHargaJualChange(index, e.target.value)}
+                                                        onChange={(e) => handleHargaJualChange(item.barang_id, e.target.value)}
                                                         onFocus={(e) => e.target.select()}
                                                         className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
                                                     />
