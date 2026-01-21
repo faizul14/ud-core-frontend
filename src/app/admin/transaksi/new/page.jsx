@@ -225,9 +225,21 @@ export default function NewTransaksiPage() {
     };
 
     const handleQtyChange = (index, qty) => {
-        const newQty = Math.max(0.01, parseFloat(qty) || 0);
         setItems((prev) =>
-            prev.map((item, i) => (i === index ? { ...item, qty: newQty } : item))
+            prev.map((item, i) => (i === index ? { ...item, qty: qty } : item))
+        );
+    };
+
+    const handleQtyBlur = (index) => {
+        setItems((prev) =>
+            prev.map((item, i) => {
+                if (i === index) {
+                    const parsedQty = parseFloat(item.qty);
+                    const finalQty = parsedQty > 0 ? parsedQty : 0.01;
+                    return { ...item, qty: finalQty };
+                }
+                return item;
+            })
         );
     };
 
@@ -256,7 +268,8 @@ export default function NewTransaksiPage() {
     };
 
     const calculateSubtotal = (item) => {
-        return item.qty * item.harga_jual;
+        const qty = parseFloat(item.qty) || 0;
+        return qty * item.harga_jual;
     };
 
     const calculateTotal = () => {
@@ -264,7 +277,10 @@ export default function NewTransaksiPage() {
     };
 
     const calculateTotalModal = () => {
-        return items.reduce((sum, item) => sum + (item.qty * item.harga_modal), 0);
+        return items.reduce((sum, item) => {
+            const qty = parseFloat(item.qty) || 0;
+            return sum + (qty * item.harga_modal);
+        }, 0);
     };
 
     const handleSubmit = async (complete = false) => {
@@ -282,6 +298,13 @@ export default function NewTransaksiPage() {
             return;
         }
 
+        // Validate quantities
+        const invalidQty = items.some(item => (parseFloat(item.qty) || 0) <= 0);
+        if (invalidQty) {
+            toast.warning('Semua barang harus memiliki jumlah (qty) lebih dari 0');
+            return;
+        }
+
         try {
             setSubmitting(true);
 
@@ -292,7 +315,7 @@ export default function NewTransaksiPage() {
                 tanggal: tanggal.toISOString(),
                 items: items.map((item) => ({
                     barang_id: item.barang_id,
-                    qty: item.qty,
+                    qty: parseFloat(item.qty),
                     harga_jual: item.harga_jual,
                     harga_modal: item.harga_modal,
                     satuan: item.satuan,
@@ -593,8 +616,8 @@ export default function NewTransaksiPage() {
                                                         type="number"
                                                         value={item.qty}
                                                         onChange={(e) => handleQtyChange(index, e.target.value)}
+                                                        onBlur={() => handleQtyBlur(index)}
                                                         onFocus={(e) => e.target.select()}
-                                                        min="0.01"
                                                         step="any"
                                                         className="w-24 px-2 py-1.5 border border-gray-200 rounded-md text-center focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
                                                     />
@@ -687,8 +710,8 @@ export default function NewTransaksiPage() {
                                                         type="number"
                                                         value={item.qty}
                                                         onChange={(e) => handleQtyChange(index, e.target.value)}
+                                                        onBlur={() => handleQtyBlur(index)}
                                                         onFocus={(e) => e.target.select()}
-                                                        min="0.01"
                                                         step="any"
                                                         className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
                                                     />
