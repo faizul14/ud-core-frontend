@@ -13,6 +13,7 @@ export default function DatePicker({
     maxDate,
     className = '',
     showTimeSelect = false,
+    onOpenChange,
     ...props
 }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -44,7 +45,8 @@ export default function DatePicker({
         const dParts = datePart.split('/');
         const tParts = timePart.split(':');
 
-        if (dParts.length === 3) {
+        // Only parse if year is fully entered (4 digits)
+        if (dParts.length === 3 && dParts[2].length === 4) {
             const day = parseInt(dParts[0], 10);
             const month = parseInt(dParts[1], 10) - 1;
             const year = parseInt(dParts[2], 10);
@@ -84,6 +86,13 @@ export default function DatePicker({
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isOpen]);
+
+    // Notify parent about open state changes
+    useEffect(() => {
+        if (onOpenChange) {
+            onOpenChange(isOpen);
+        }
+    }, [isOpen, onOpenChange]);
 
     const handleInputChange = (e) => {
         const value = e.target.value;

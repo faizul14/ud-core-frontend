@@ -54,6 +54,7 @@ export default function PeriodeManagementPage() {
     const [closeDialogOpen, setCloseDialogOpen] = useState(false);
     const [closingItem, setClosingItem] = useState(null);
     const [closeLoading, setCloseLoading] = useState(false);
+    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -106,6 +107,7 @@ export default function PeriodeManagementPage() {
         setModalOpen(false);
         setEditingItem(null);
         setFormData(INITIAL_FORM);
+        setIsDatePickerOpen(false);
     };
 
     const handleFormChange = (e) => {
@@ -465,7 +467,8 @@ export default function PeriodeManagementPage() {
                 isOpen={modalOpen}
                 onClose={closeModal}
                 title={editingItem ? 'Edit Periode' : 'Tambah Periode Baru'}
-                size="md"
+                size="lg"
+                className={isDatePickerOpen ? 'min-h-[500px]' : ''}
             >
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Nama Periode */}
@@ -493,6 +496,7 @@ export default function PeriodeManagementPage() {
                             <DatePicker
                                 selected={formData.tanggal_mulai}
                                 onChange={(date) => handleDateChange('tanggal_mulai', date)}
+                                onOpenChange={setIsDatePickerOpen}
                                 placeholder="Pilih tanggal mulai"
                                 maxDate={formData.tanggal_selesai}
                             />
@@ -504,6 +508,7 @@ export default function PeriodeManagementPage() {
                             <DatePicker
                                 selected={formData.tanggal_selesai}
                                 onChange={(date) => handleDateChange('tanggal_selesai', date)}
+                                onOpenChange={setIsDatePickerOpen}
                                 placeholder="Pilih tanggal selesai"
                                 minDate={formData.tanggal_mulai}
                             />
