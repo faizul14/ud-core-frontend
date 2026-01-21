@@ -50,7 +50,7 @@ export default function BarangManagementPage() {
     const [filterUD, setFilterUD] = useState('');
     const [pagination, setPagination] = useState({
         page: 1,
-        limit: 10,
+        limit: 50,
         totalPages: 1,
         totalDocuments: 0,
     });
@@ -93,6 +93,7 @@ export default function BarangManagementPage() {
                 limit: pagination.limit,
                 search: search || undefined,
                 ud_id: filterUD || undefined,
+                sort: 'ud_id', // Group by UD at the database level if supported
             };
             const response = await barangAPI.getAll(params);
             if (response.data.success) {
@@ -424,8 +425,14 @@ export default function BarangManagementPage() {
                                             ));
                                         }
 
-                                        // Grouping by UD
-                                        const groupedData = data.reduce((acc, item) => {
+                                        // Sort and Grouping by UD
+                                        const sortedData = [...data].sort((a, b) => {
+                                            const nameA = a.ud_id?.nama_ud || 'ZZZ';
+                                            const nameB = b.ud_id?.nama_ud || 'ZZZ';
+                                            return nameA.localeCompare(nameB);
+                                        });
+
+                                        const groupedData = sortedData.reduce((acc, item) => {
                                             const udId = item.ud_id?._id || 'others';
                                             if (!acc[udId]) {
                                                 acc[udId] = {
@@ -439,72 +446,83 @@ export default function BarangManagementPage() {
 
                                         let globalIndex = (pagination.page - 1) * pagination.limit;
 
-                                        return Object.entries(groupedData).map(([udId, group]) => (
-                                            <Fragment key={udId}>
-                                                <tr className="bg-gray-100/50">
-                                                    <td colSpan="8" className="px-6 py-2">
-                                                        <p className="text-xs font-bold text-blue-600 uppercase tracking-wider">
-                                                            {group.ud?.nama_ud || 'Tanpa UD'} ({group.items.length} Barang)
-                                                        </p>
-                                                    </td>
-                                                </tr>
-                                                {group.items.map((item) => {
-                                                    globalIndex++;
-                                                    return (
-                                                        <tr key={item._id} className="hover:bg-gray-50 transition-colors">
-                                                            <td className="px-3 md:px-4 py-4 text-center text-gray-500 font-medium">
-                                                                {globalIndex}
-                                                            </td>
-                                                            <td className="px-3 md:px-4 py-4 min-w-[150px]">
-                                                                <p className="font-medium text-gray-900 line-clamp-2 md:line-clamp-1">{item.nama_barang}</p>
-                                                            </td>
-                                                            <td className="px-3 md:px-4 py-4 text-center">
-                                                                <span className="px-2 py-1 text-[10px] md:text-xs font-medium bg-gray-100 text-gray-700 rounded uppercase">
-                                                                    {item.satuan}
-                                                                </span>
-                                                            </td>
-                                                            <td className="px-3 md:px-4 py-4 text-right font-medium text-gray-900 text-sm md:text-base">
-                                                                {formatCurrency(item.harga_jual)}
-                                                            </td>
-                                                            <td className="hidden xl:table-cell px-3 md:px-4 py-4 text-right text-gray-500">
-                                                                {formatCurrency(item.harga_modal || 0)}
-                                                            </td>
-                                                            <td className="hidden lg:table-cell px-3 md:px-4 py-4">
-                                                                <div>
-                                                                    <p className="text-sm font-medium text-gray-900">{item.ud_id?.nama_ud || '-'}</p>
-                                                                    <p className="text-xs text-gray-500">{item.ud_id?.kode_ud || ''}</p>
-                                                                </div>
-                                                            </td>
-                                                            <td className="hidden lg:table-cell px-3 md:px-4 py-4 text-center">
-                                                                <span className={`inline-block px-2.5 py-1 text-xs font-medium rounded-full
-                                                           ${item.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
-                                                         `}>
-                                                                    {item.isActive ? 'Aktif' : 'Nonaktif'}
-                                                                </span>
-                                                            </td>
-                                                            <td className="px-3 md:px-4 py-4">
-                                                                <div className="flex items-center justify-center gap-1 md:gap-2">
-                                                                    <button
-                                                                        onClick={() => openEditModal(item)}
-                                                                        className="p-1.5 md:p-2 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors"
-                                                                        title="Edit"
-                                                                    >
-                                                                        <Edit className="w-4 h-4" />
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => openDeleteDialog(item)}
-                                                                        className="p-1.5 md:p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
-                                                                        title="Hapus"
-                                                                    >
-                                                                        <Trash2 className="w-4 h-4" />
-                                                                    </button>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </Fragment>
-                                        ));
+                                        // Ensure groups are rendered in the same order as sorted data
+                                        const groupedEntries = Object.values(groupedData).sort((a, b) => {
+                                            const nameA = a.ud?.nama_ud || 'ZZZ';
+                                            const nameB = b.ud?.nama_ud || 'ZZZ';
+                                            return nameA.localeCompare(nameB);
+                                        });
+
+                                        return groupedEntries.map((group) => {
+                                            const udId = group.ud?._id || 'others';
+                                            return (
+                                                <Fragment key={udId}>
+                                                    <tr className="bg-gray-100/50">
+                                                        <td colSpan="8" className="px-6 py-2">
+                                                            <p className="text-xs font-bold text-blue-600 uppercase tracking-wider">
+                                                                {group.ud?.nama_ud || 'Tanpa UD'} ({group.items.length} Barang)
+                                                            </p>
+                                                        </td>
+                                                    </tr>
+                                                    {group.items.map((item) => {
+                                                        globalIndex++;
+                                                        return (
+                                                            <tr key={item._id} className="hover:bg-gray-50 transition-colors">
+                                                                <td className="px-3 md:px-4 py-4 text-center text-gray-500 font-medium">
+                                                                    {globalIndex}
+                                                                </td>
+                                                                <td className="px-3 md:px-4 py-4 min-w-[150px]">
+                                                                    <p className="font-medium text-gray-900 line-clamp-2 md:line-clamp-1">{item.nama_barang}</p>
+                                                                </td>
+                                                                <td className="px-3 md:px-4 py-4 text-center">
+                                                                    <span className="px-2 py-1 text-[10px] md:text-xs font-medium bg-gray-100 text-gray-700 rounded uppercase">
+                                                                        {item.satuan}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-3 md:px-4 py-4 text-right font-medium text-gray-900 text-sm md:text-base">
+                                                                    {formatCurrency(item.harga_jual)}
+                                                                </td>
+                                                                <td className="hidden xl:table-cell px-3 md:px-4 py-4 text-right text-gray-500">
+                                                                    {formatCurrency(item.harga_modal || 0)}
+                                                                </td>
+                                                                <td className="hidden lg:table-cell px-3 md:px-4 py-4">
+                                                                    <div>
+                                                                        <p className="text-sm font-medium text-gray-900">{item.ud_id?.nama_ud || '-'}</p>
+                                                                        <p className="text-xs text-gray-500">{item.ud_id?.kode_ud || ''}</p>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="hidden lg:table-cell px-3 md:px-4 py-4 text-center">
+                                                                    <span className={`inline-block px-2.5 py-1 text-xs font-medium rounded-full
+                                                               ${item.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
+                                                             `}>
+                                                                        {item.isActive ? 'Aktif' : 'Nonaktif'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-3 md:px-4 py-4">
+                                                                    <div className="flex items-center justify-center gap-1 md:gap-2">
+                                                                        <button
+                                                                            onClick={() => openEditModal(item)}
+                                                                            className="p-1.5 md:p-2 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors"
+                                                                            title="Edit"
+                                                                        >
+                                                                            <Edit className="w-4 h-4" />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => openDeleteDialog(item)}
+                                                                            className="p-1.5 md:p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                                                                            title="Hapus"
+                                                                        >
+                                                                            <Trash2 className="w-4 h-4" />
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </Fragment>
+                                            );
+                                        });
+
                                     })()}
                                 </tbody>
                             </table>
@@ -581,7 +599,13 @@ export default function BarangManagementPage() {
                                     ));
                                 }
 
-                                const groupedData = data.reduce((acc, item) => {
+                                const sortedData = [...data].sort((a, b) => {
+                                    const nameA = a.ud_id?.nama_ud || 'ZZZ';
+                                    const nameB = b.ud_id?.nama_ud || 'ZZZ';
+                                    return nameA.localeCompare(nameB);
+                                });
+
+                                const groupedData = sortedData.reduce((acc, item) => {
                                     const udId = item.ud_id?._id || 'others';
                                     if (!acc[udId]) {
                                         acc[udId] = {
@@ -595,69 +619,79 @@ export default function BarangManagementPage() {
 
                                 let globalIndex = (pagination.page - 1) * pagination.limit;
 
-                                return Object.entries(groupedData).map(([udId, group]) => (
-                                    <div key={udId} className="divide-y divide-gray-100">
-                                        <div className="bg-gray-50 px-4 py-2 border-y border-gray-100">
-                                            <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
-                                                {group.ud?.nama_ud || 'Tanpa UD'} ({group.items.length} Barang)
-                                            </p>
-                                        </div>
-                                        {group.items.map((item) => {
-                                            globalIndex++;
-                                            return (
-                                                <div key={item._id} className="p-4 space-y-3 hover:bg-gray-50 transition-colors relative">
-                                                    <div className="absolute top-4 left-4 -ml-2 -mt-2">
-                                                        <span className="w-5 h-5 bg-blue-100 text-blue-600 text-[10px] font-bold rounded-full flex items-center justify-center">
-                                                            {globalIndex}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex justify-between items-start gap-4 pl-6">
-                                                        <div className="flex-1">
-                                                            <h3 className="font-semibold text-gray-900 leading-tight">
-                                                                {item.nama_barang}
-                                                            </h3>
-                                                            <div className="flex items-center gap-2 mt-1.5 font-sm">
-                                                                <span className="px-2 py-0.5 text-[10px] font-medium bg-gray-100 text-gray-700 rounded uppercase">
-                                                                    {item.satuan}
-                                                                </span>
-                                                                <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full
+                                const groupedEntries = Object.values(groupedData).sort((a, b) => {
+                                    const nameA = a.ud?.nama_ud || 'ZZZ';
+                                    const nameB = b.ud?.nama_ud || 'ZZZ';
+                                    return nameA.localeCompare(nameB);
+                                });
+
+                                return groupedEntries.map((group) => {
+                                    const udId = group.ud?._id || 'others';
+                                    return (
+                                        <div key={udId} className="divide-y divide-gray-100">
+                                            <div className="bg-gray-50 px-4 py-2 border-y border-gray-100">
+                                                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
+                                                    {group.ud?.nama_ud || 'Tanpa UD'} ({group.items.length} Barang)
+                                                </p>
+                                            </div>
+                                            {group.items.map((item) => {
+                                                globalIndex++;
+                                                return (
+                                                    <div key={item._id} className="p-4 space-y-3 hover:bg-gray-50 transition-colors relative">
+                                                        <div className="absolute top-4 left-4 -ml-2 -mt-2">
+                                                            <span className="w-5 h-5 bg-blue-100 text-blue-600 text-[10px] font-bold rounded-full flex items-center justify-center">
+                                                                {globalIndex}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex justify-between items-start gap-4 pl-6">
+                                                            <div className="flex-1">
+                                                                <h3 className="font-semibold text-gray-900 leading-tight">
+                                                                    {item.nama_barang}
+                                                                </h3>
+                                                                <div className="flex items-center gap-2 mt-1.5 font-sm">
+                                                                    <span className="px-2 py-0.5 text-[10px] font-medium bg-gray-100 text-gray-700 rounded uppercase">
+                                                                        {item.satuan}
+                                                                    </span>
+                                                                    <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full
                                                                   ${item.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
                                                                 `}>
-                                                                    {item.isActive ? 'Aktif' : 'Nonaktif'}
-                                                                </span>
+                                                                        {item.isActive ? 'Aktif' : 'Nonaktif'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-1">
+                                                                <button
+                                                                    onClick={() => openEditModal(item)}
+                                                                    className="p-2 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors"
+                                                                >
+                                                                    <Edit className="w-4 h-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => openDeleteDialog(item)}
+                                                                    className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
                                                             </div>
                                                         </div>
-                                                        <div className="flex items-center gap-1">
-                                                            <button
-                                                                onClick={() => openEditModal(item)}
-                                                                className="p-2 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors"
-                                                            >
-                                                                <Edit className="w-4 h-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => openDeleteDialog(item)}
-                                                                className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </button>
-                                                        </div>
-                                                    </div>
 
-                                                    <div className="grid grid-cols-2 gap-4 pl-6">
-                                                        <div>
-                                                            <p className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mb-0.5">Harga Jual</p>
-                                                            <p className="font-bold text-blue-600">{formatCurrency(item.harga_jual)}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mb-0.5">Harga Modal</p>
-                                                            <p className="text-gray-900 font-medium">{formatCurrency(item.harga_modal || 0)}</p>
+                                                        <div className="grid grid-cols-2 gap-4 pl-6">
+                                                            <div>
+                                                                <p className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mb-0.5">Harga Jual</p>
+                                                                <p className="font-bold text-blue-600">{formatCurrency(item.harga_jual)}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mb-0.5">Harga Modal</p>
+                                                                <p className="text-gray-900 font-medium">{formatCurrency(item.harga_modal || 0)}</p>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                ));
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                });
+
                             })()}
                         </div>
 
